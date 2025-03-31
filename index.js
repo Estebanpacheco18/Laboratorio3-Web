@@ -1,22 +1,36 @@
 const fs = require('fs');
+const zlib = require('zlib');
 
-// FLujo de lectura
+// Flujo de lectura
 const readable = fs.createReadStream('datos.txt', { encoding: 'utf8' });
-
-readable.on('data', chunk => console.log('Fragmento recibido:', chunk));
-readable.on('end', () => console.log('Lectura completa'));
-readable.on('error', err => console.error('Error:', err));
 
 // Flujo de escritura
 const writable = fs.createWriteStream('salida.txt');
-writable.write('Este es un mensaje de prueba.\n');
-writable.end('Fin del mensaje.');
-writable.on('finish', () => console.log('Escritura completada.'));
+
+// Manejo del flujo de datos
+readable.on('data', chunk => {
+    if (!writable.write(chunk)) {
+        readable.pause();
+        writable.on('drain', () => readable.resume());
+    }
+});
+
+// Manejo del final del flujo e impresión del mensaje
+readable.on('end', () => {
+    writable.end('Fin del mensaje.'); // En el final se escribe el mensaje
+    console.log('Lectura completa y escritura finalizada.'); // Mensaje de finalización en la consola
+});
+
+// Manejo de errores en la lectura y escritura
+readable.on('error', err => console.error('Error en lectura:', err));
+writable.on('error', err => console.error('Error en escritura:', err));
 
 // Compresión del archivo entrada.txt
-const zlib = require('zlib');
 const readStream = fs.createReadStream('entrada.txt');
 const writeStream = fs.createWriteStream('entrada.txt.gz');
 const gzip = zlib.createGzip();
 
 readStream.pipe(gzip).pipe(writeStream);
+
+// Imprimir mensajes de progreso
+writeStream.on('finish', () => console.log('Compresión completada.'));
