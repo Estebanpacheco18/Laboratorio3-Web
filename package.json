@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Estebanpacheco18/Laboratorio3-Web#readme",
   "dependencies": {
-    "fs-extra": "^11.3.0"
+    "fs-extra": "^11.3.0",
+    "laboratorio3-web": "file:"
   }
 }
